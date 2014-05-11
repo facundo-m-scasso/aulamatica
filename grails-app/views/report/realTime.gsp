@@ -1,14 +1,17 @@
-<h1>Eventos en tiempo real para ${day} ${date} a las ${time} </h1>
-<table>
-	<thead>
-		<th>Codigo</th>
+<meta name="layout" content="main">
+<div class="box-header">
+	<h3 class="box-title">Eventos en tiempo real para ${day} ${date} a las ${time}</h3>
+</div>
+<div class="box-body no-padding">
+	<table class="table">
+		<tr>
+			<th>Codigo</th>
 		<th>Materia</th>
 		<th>Comision</th>
 		<th>Inicio</th>
 		<th>Fin</th>
 		<th>Aula</th>
-	</thead>
-	<tbody>
+		</tr>
 		<g:each in="${events}" var="event" status="i">
 		    <tr>
 		    	<td>${event.code}</td>
@@ -19,5 +22,5 @@
 		    	<td>${event.room}</td>
 		    </tr>
 		</g:each>
-	</tbody>
-</table>
+	</table>
+</div>
