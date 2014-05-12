@@ -61,12 +61,18 @@ class ReportController {
 		def rooms = Room.findAllByCapacityGreaterThan(0)
 		def occupationalFactorOccupied = ['Lunes':[], 'Martes':[], 'Miercoles':[], 'Jueves':[], 'Viernes':[], 'Total':[], '%':[]]
 		def occupationalFactorFree = ['Lunes':[], 'Martes':[], 'Miercoles':[], 'Jueves':[], 'Viernes':[], 'Total':[], '%':[]]
+		def occupationalFactorChairOccupied = ['Lunes':[], 'Martes':[], 'Miercoles':[], 'Jueves':[], 'Viernes':[], 'Total':[], '%':[]]
+		def occupationalFactorChairFree = ['Lunes':[], 'Martes':[], 'Miercoles':[], 'Jueves':[], 'Viernes':[], 'Total':[], '%':[]]
 		Integer[] totalOccupied = new Integer[14]
 		Integer[] percentageOccupied = new Integer[14]
 		Integer[] totalFree = new Integer[14]
 		Integer[] percentageFree = new Integer[14]
+		Integer[] totalChairOccupied = new Integer[14]
+		Integer[] percentageChairOccupied = new Integer[14]
+		Integer[] totalChairFree = new Integer[14]
+		Integer[] percentageChairFree = new Integer[14]
 		for (i in 0..13) {
-			totalOccupied[i] = percentageOccupied[i] = totalFree[i] = percentageFree[i] = new Integer(0)
+			totalChairFree[i] = percentageChairFree[i] = totalChairOccupied[i] = percentageChairOccupied[i] = totalOccupied[i] = percentageOccupied[i] = totalFree[i] = percentageFree[i] = new Integer(0)
 		}
 		rooms.each {
 			cant++
@@ -76,12 +82,22 @@ class ReportController {
 		for(i in 0..4)
 		{
 			Integer[] forThis = new Integer[14]
+			Integer[] forThisChair = new Integer[14]
+			for(k in 0..13)
+			{
+				forThisChair[k] = new Integer(0)
+			}
 			ArrayList<Set<Room>> notAvailable = getNotAvailableRooms(monday.withFieldAdded(DurationFieldType.days(), i))
 			notAvailable.eachWithIndex { r, j ->
 				forThis[j] = r.size()
 				totalOccupied[j] += r.size()
+				r.each {
+					totalChairOccupied[j] += it.capacity
+					forThisChair[j] += it.capacity
+				}
 			}
 			occupationalFactorOccupied[days[i+1]] = forThis;
+			occupationalFactorChairOccupied[days[i+1]] = forThisChair;
 		}
 		
 		occupationalFactorOccupied.each { key, value ->
@@ -91,6 +107,15 @@ class ReportController {
 				totalFree[j] += cant - n
 			}
 			occupationalFactorFree[key] = forThis
+		}
+		
+		occupationalFactorChairOccupied.each { key, value ->
+			Integer[] forThis = new Integer[14]
+			value.eachWithIndex { n, j ->
+				forThis[j] = sum - n
+				totalChairFree[j] += sum - n
+			}
+			occupationalFactorChairFree[key] = forThis
 		}
 		
 		totalOccupied.eachWithIndex { n, i ->
@@ -103,51 +128,42 @@ class ReportController {
 			percentageFree[i] *= (100/cant)
 		}
 		
+		totalChairOccupied.eachWithIndex { n, i ->
+			percentageChairOccupied[i] = (n-1)/5
+			percentageChairOccupied[i] *= (100/sum)
+		}
+		
+		totalChairFree.eachWithIndex { n, i ->
+			percentageChairFree[i] = (n-1)/5
+			percentageChairFree[i] *= (100/sum)
+		}
+		
 		occupationalFactorOccupied["Total"] = totalOccupied;
 		occupationalFactorOccupied["%"] = percentageOccupied;
 		occupationalFactorFree["Total"] = totalFree;
 		occupationalFactorFree["%"] = percentageFree;
+		occupationalFactorChairOccupied["Total"] = totalChairOccupied;
+		occupationalFactorChairOccupied["%"] = percentageChairOccupied;
+		occupationalFactorChairFree["Total"] = totalChairFree;
+		occupationalFactorChairFree["%"] = percentageChairFree;
 
-		[occupationalFactorOccupied: occupationalFactorOccupied, occupationalFactorFree: occupationalFactorFree, totalCapacity: sum, totalRooms: cant, monday: dtf.print(monday), friday: dtf.print(monday.withFieldAdded(DurationFieldType.days(), 4))]
+		[occupationalFactorChairOccupied: occupationalFactorChairOccupied, occupationalFactorChairFree: occupationalFactorChairFree, 
+			occupationalFactorOccupied: occupationalFactorOccupied, occupationalFactorFree: occupationalFactorFree, 
+			totalCapacity: sum, totalRooms: cant, monday: dtf.print(monday), 
+			friday: dtf.print(monday.withFieldAdded(DurationFieldType.days(), 4))]
 	}
 	
 	def tetris = {
 		DateTime d = getDate(params.date)
-		List<TetrisItem> tetris = new ArrayList<TetrisItem>()
 		String dayName = days[d.getDayOfWeek()]
-		def rooms = Room.list()
-		rooms.each {
-			TetrisItem ti = new TetrisItem()
-			ti.roomName = it.name
-			ti.roomCapacity = it.capacity
-			ti.day = dayName
-			ti.events = new String[29]
-			for(i in 0..28)
-			{
-				ti.events[i] = ''
-			}
-			List<ExtraOrdinaryEvent> extra = ExtraOrdinaryEvent.findAllByRoomAndDate(it.name, d)
-			extra.each { e ->
-				int min = ((e.from.getHourOfDay() - 8 + 3)*2) + ((e.from.getMinuteOfHour() > 0) ? 1 : 0)
-				int max = ((e.to.getHourOfDay() - 8 + 3)*2) + ((e.to.getMinuteOfHour() > 0) ? 1 : 0)
-				for(int i = min; i < max; i++) {
-					ti.events[i] += e.courseName + "/"
-				}
-			}
-			List<OrdinaryEvent> ord = OrdinaryEvent.findAllByRoomAndDay(it.name, d.getDayOfWeek())
-			ord.each {e ->
-				int min = ((e.from.getHourOfDay() - 8 + 3)*2) + ((e.from.getMinuteOfHour() > 0) ? 1 : 0)
-				int max = ((e.to.getHourOfDay() - 8 + 3)*2) + ((e.to.getMinuteOfHour() > 0) ? 1 : 0)
-				for(int i = min; i < max; i++) {
-					ti.events[i] += e.courseCode + " - " + e.commission + " (" + e.enrolled + ") /"
-				}
-			}
-			tetris.add(ti)
-		}
-		[tetris: tetris, day: dayName, date: dtf.print(d)]
+		[tetris: getTetris(d), day: dayName, date: dtf.print(d)]
 	}
 	
-	def scheduleView = {}
+	def scheduleView = {
+		DateTime d = getDate(params.date)
+		String dayName = days[d.getDayOfWeek()]
+		[tetris: getTetris(d), day: dayName, date: dtf.print(d)]
+	}
 
 	public String getTimeString(LocalTime t, boolean zone) {
 		return (t.getHourOfDay() < (zone ? 10 : 7) ? "0" : "") + (t.getHourOfDay() + (zone ? 0 : 3)) + ":" +
@@ -220,5 +236,47 @@ class ReportController {
 		}
 		
 		events.sort { a, b -> a.from.equals(b.from) ? a.to.compareTo(b.to) : a.from.compareTo(b.from) }
+	}
+	
+	public ArrayList<TetrisItem> getTetris(DateTime d)
+	{
+		String dayName = days[d.getDayOfWeek()]
+		List<TetrisItem> tetris = new ArrayList<TetrisItem>()
+		def rooms = Room.findAllByCapacityGreaterThan(0)
+		rooms.each {
+			TetrisItem ti = new TetrisItem()
+			ti.roomName = it.name
+			ti.roomCapacity = it.capacity
+			ti.day = dayName
+			ti.events = new String[28]
+			for(i in 0..27)
+			{
+				ti.events[i] = ''
+			}
+			List<ExtraOrdinaryEvent> extra = ExtraOrdinaryEvent.findAllByRoomAndDate(it.name, d)
+			extra.each { e ->
+				int min = ((e.from.getHourOfDay() - 8 + 3)*2) + ((e.from.getMinuteOfHour() > 0) ? 1 : 0)
+				int max = ((e.to.getHourOfDay() - 8 + 3)*2) + ((e.to.getMinuteOfHour() > 0) ? 1 : 0)
+				for(int i = min; i < max; i++) {
+					if(!ti.events[i].equals('')) {
+						ti.events[i] += '/'
+					}
+					ti.events[i] += 'Extra'
+				}
+			}
+			List<OrdinaryEvent> ord = OrdinaryEvent.findAllByRoomAndDay(it.name, d.getDayOfWeek())
+			ord.each {e ->
+				int min = ((e.from.getHourOfDay() - 8 + 3)*2) + ((e.from.getMinuteOfHour() > 0) ? 1 : 0)
+				int max = ((e.to.getHourOfDay() - 8 + 3)*2) + ((e.to.getMinuteOfHour() > 0) ? 1 : 0)
+				for(int i = min; i < max; i++) {
+					if(!ti.events[i].equals('')) {
+						ti.events[i] += '/'
+					}
+					ti.events[i] += e.courseCode + " - " + e.commission + " (" + e.enrolled + ") "
+				}
+			}
+			tetris.add(ti)
+		}
+		return tetris
 	}
 }

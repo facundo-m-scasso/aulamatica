@@ -20,13 +20,14 @@
         <link href="${resource(dir: 'css/fullcalendar', file: 'fullcalendar.css')}" rel="stylesheet" type="text/css" />
         <link href="${resource(dir: 'css/daterangepicker', file: 'daterangepicker-bs3.css')}" rel="stylesheet" type="text/css" />
         <link href="${resource(dir: 'css/bootstrap-wysihtml5', file: 'bootstrap3-wysihtml5.min.css')}" rel="stylesheet" type="text/css" />
+        <link href="${resource(dir: 'css/morris', file: 'morris.css')}" rel="stylesheet" type="text/css" />
         <link href="${resource(dir: 'css', file: 'AdminLTE.css')}" rel="stylesheet" type="text/css" />
 		<g:layoutHead/>
         <r:layoutResources />
 	</head>
 	<body class="skin-blue">
         <header class="header" style="position: fixed;">
-            <a href="index.html" class="logo">
+            <a href="${createLink(uri:'/index', absolute: 'true')}" class="logo">
                 ITBA - Aulamatica
             </a>
             <nav class="navbar navbar-static-top" role="navigation">
@@ -41,7 +42,7 @@
                         <li class="dropdown messages-menu">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                                 <i class="fa fa-envelope"></i>
-                                <span class="label label-success">4</span>
+                                <span class="label label-success">1</span>
                             </a>
                             <ul class="dropdown-menu">
                                 <li class="header">Tenes 1 mensaje</li>
@@ -97,7 +98,7 @@
                 <section class="sidebar">
                     <ul class="sidebar-menu">
                         <li class="active">
-                            <a href="index.html">
+                            <a href="${createLink(uri:'/index', absolute: 'true')}">
                                 <i class="fa fa-dashboard"></i> <span>Inicio</span>
                             </a>
                         </li>
@@ -107,18 +108,18 @@
                                     <i class="fa fa-angle-left pull-right"></i>
                             </a>
                             <ul class="treeview-menu">
-                                <li><a href="pages/forms/general.html"><i class="fa fa-angle-double-right"></i>Tiempo Real</a></li>
-                                <li><a href="pages/forms/advanced.html"><i class="fa fa-angle-double-right"></i>Tetris TR</a></li>
-                                <li><a href="pages/forms/advanced.html"><i class="fa fa-angle-double-right"></i>Tetris TR CH</a></li>
-                                <li><a href="pages/forms/editors.html"><i class="fa fa-angle-double-right"></i>Aulas Libres TR</a></li>
-                                <li><a href="pages/forms/editors.html"><i class="fa fa-angle-double-right"></i>Aulas Ocupadas TR</a></li>
-                                <li><a href="pages/forms/advanced.html"><i class="fa fa-angle-double-right"></i>Factor Ocupacional</a></li>
-                                <li><a href="pages/forms/advanced.html"><i class="fa fa-angle-double-right"></i>Dia Siguiente</a></li>
-                                <li><a href="pages/forms/advanced.html"><i class="fa fa-angle-double-right"></i>Tiempo Real SIM</a></li>
-                                <li><a href="pages/forms/advanced.html"><i class="fa fa-angle-double-right"></i>Tetris SIM</a></li>
-                                <li><a href="pages/forms/advanced.html"><i class="fa fa-angle-double-right"></i>Tetris SIM CH</a></li>
-                                <li><a href="pages/forms/editors.html"><i class="fa fa-angle-double-right"></i>Aulas Libres SIM</a></li>
-                                <li><a href="pages/forms/editors.html"><i class="fa fa-angle-double-right"></i>Aulas Ocupadas SIM</a></li>
+                                <li><a href="${createLink(uri:'/report/realTime', absolute: 'true')}"><i class="fa fa-angle-double-right"></i>Tiempo Real</a></li>
+                                <li><a href="${createLink(uri:'/report/tetris', absolute: 'true')}"><i class="fa fa-angle-double-right"></i>Tetris TR</a></li>
+                                <li><a href="${createLink(uri:'/report/scheduleView', absolute: 'true')}"><i class="fa fa-angle-double-right"></i>Tetris TR CH</a></li>
+                                <li><a href="${createLink(uri:'/report/availableRooms', absolute: 'true')}"><i class="fa fa-angle-double-right"></i>Aulas Libres TR</a></li>
+                                <li><a href="${createLink(uri:'/report/notAvailableRooms', absolute: 'true')}"><i class="fa fa-angle-double-right"></i>Aulas Ocupadas TR</a></li>
+                                <li><a href="${createLink(uri:'/report/occupationalFactor', absolute: 'true')}"><i class="fa fa-angle-double-right"></i>Factor Ocupacional</a></li>
+                                <li><a href="${createLink(uri:'/report/nextDay', absolute: 'true')}"><i class="fa fa-angle-double-right"></i>Dia Siguiente</a></li>
+                                <li><a href="${createLink(uri:'/report/selectDate', absolute: 'true')}"><i class="fa fa-angle-double-right"></i>Tiempo Real SIM</a></li>
+                                <li><a href="${createLink(uri:'/report/selectDate', absolute: 'true')}"><i class="fa fa-angle-double-right"></i>Tetris SIM</a></li>
+                                <li><a href="${createLink(uri:'/report/selectDate', absolute: 'true')}"><i class="fa fa-angle-double-right"></i>Tetris SIM CH</a></li>
+                                <li><a href="${createLink(uri:'/report/selectDate', absolute: 'true')}"><i class="fa fa-angle-double-right"></i>Aulas Libres SIM</a></li>
+                                <li><a href="${createLink(uri:'/report/selectDate', absolute: 'true')}"><i class="fa fa-angle-double-right"></i>Aulas Ocupadas SIM</a></li>
                             </ul>
                         </li>
                         <li class="treeview">

@@ -21,6 +21,8 @@ grails.project.dependency.resolution = {
 		grailsHome()
 		grailsCentral()
 		mavenCentral()
+mavenRepo "http://repository.codehaus.org/"
+
 
 		// uncomment these to enable remote dependency resolution from public Maven repositories
 		//mavenCentral()
@@ -32,7 +34,7 @@ grails.project.dependency.resolution = {
 	}
 	dependencies {
 		// specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
-
+compile "org.codehaus.groovy.modules.http-builder:http-builder:0.7"
 		// runtime 'mysql:mysql-connector-java:5.1.16'
 	}
 
