@@ -11,6 +11,9 @@ import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import com.itba.aulamatica.dto.CalendarEvent;
+import com.itba.aulamatica.dto.Collision;
+import com.itba.aulamatica.dto.Deficit;
 import com.itba.aulamatica.dto.EventDTO;
 import com.itba.aulamatica.dto.TetrisItem;
 import com.sun.tools.jdi.JDWP.EventRequest.Set.Modifier.Count;
@@ -22,7 +25,7 @@ class ReportController {
 
 	def availableRooms = {
 		ArrayList<Set<Room>> rooms = new ArrayList<HashSet<Room>>(14);
-		List<Room> dbrooms = Room.findAll()
+		List<Room> dbrooms = Room.findAllByCapacityGreaterThan(0)
 		DateTime d = getDate(params.date)
 		for(i in 0..13) {
 			rooms[i] = new HashSet<Room>()
@@ -36,13 +39,52 @@ class ReportController {
 		}
 		[availableRooms: rooms, date: dtf.print(d), day: days[d.getDayOfWeek()]]
 	}
+	
+	def roomCalendar = {
+		if(params.room)
+		{
+			DateTime monday = getDate(params.date).weekOfWeekyear().roundFloorCopy()
+			ArrayList<CalendarEvent> calendar = new ArrayList<CalendarEvent>()
+			Integer totalHoursWeek = new Integer(14 * 5)
+			Integer consume = new Integer(0)
+			for(i in 0..4)
+			{	
+				DateTime otherDay = monday.withFieldAdded(DurationFieldType.days(), i)
+				def extraord = ExtraOrdinaryEvent.findAllByDateAndRoom(otherDay, params.room)
+				extraord.each {
+					CalendarEvent c = new CalendarEvent([eventName: it.courseCode + ' - ' + it.courseName,
+						day: otherDay.getDayOfMonth(), month: otherDay.getMonthOfYear(), year: otherDay.getYear(),
+						hourFrom: it.from.getHourOfDay() + 3, minuteFrom: it.from.getMinuteOfHour(), 
+						hourTo: it.to.getHourOfDay() + 3, minuteTo: it.to.getMinuteOfHour()
+						])
+					consume += c.hourTo - c.hourFrom
+					calendar.add(c)
+				}
+				def ord = OrdinaryEvent.findAllByDayAndRoom(otherDay.getDayOfWeek(), params.room)
+				ord.each {
+					CalendarEvent c = new CalendarEvent([eventName: it.courseCode + ' - ' + it.courseName + '(' + it.commission + ')',
+						day: otherDay.getDayOfMonth(), month: otherDay.getMonthOfYear(), year: otherDay.getYear(),
+						hourFrom: it.from.getHourOfDay() + 3, minuteFrom: it.from.getMinuteOfHour(), 
+						hourTo: it.to.getHourOfDay() + 3, minuteTo: it.to.getMinuteOfHour()
+						])
+					consume += c.hourTo - c.hourFrom
+					calendar.add(c)
+				}
+			}
+			[consume: consume, free: totalHoursWeek - consume, events: calendar, room: params.room, monday: dtf.print(monday), friday: dtf.print(monday.withFieldAdded(DurationFieldType.days(), 4))]
+		}
+	}
+	
 	def notAvailableRooms = {
 		DateTime d = getDate(params.date)
 		[notAvailableRooms: getNotAvailableRooms(d), date: dtf.print(d), day: days[d.getDayOfWeek()]]
 	}
 	def simulationDate = {
 		DateTime d = getDate(params.date)
-		LocalTime t = getTime(params.time)
+		LocalTime t = new LocalTime(8, 0)
+		if(d.dayOfYear == new DateTime().dayOfYear) {
+			t = getTime(params.time)
+		}
 		redirect(action:'realTime', params:[date: dtf.print(d), time: getTimeString(t, true)])
 	}
 	def realTime = {
@@ -162,9 +204,97 @@ class ReportController {
 	def scheduleView = {
 		DateTime d = getDate(params.date)
 		String dayName = days[d.getDayOfWeek()]
-		[tetris: getTetris(d), day: dayName, date: dtf.print(d)]
+		[tetris: getTetris(d), day: dayName, date: dtf.print(d), dateTime: d]
 	}
 
+	def collisions = {
+		DateTime d = getDate(params.date)
+		String dayName = days[d.getDayOfWeek()]
+		ArrayList<TetrisItem> tetris = getTetris(d)
+		ArrayList<Collision> collisions = new ArrayList<Collision>()
+		tetris.each {
+			it.events.eachWithIndex { e, i ->
+				if(e.split("/").length > 1)
+				{
+					String timeTo = (i%2 == 0 ? ((i/2) + 8) + ":30" : (((i+1)/2) + 8) + ":00")
+					boolean exists = false
+					collisions.each{ c ->
+						if(c.room.equals(it.roomName) && c.events.equals(e))
+						{
+							c.to = timeTo
+							exists = true;
+						}
+					}
+					if(!exists)
+					{
+						collisions.add(new Collision([room: it.roomName, events: e,
+							from: (i%2 == 0 ? ((i/2) + 8) + ":00" : (((i-1)/2) + 8) + ":30"), to: timeTo]))
+					}
+				}
+			}	
+		}
+		[collisions: collisions, day: dayName, date: dtf.print(d)]
+	} 
+	
+	def deficits = {
+		DateTime d = getDate(params.date)
+		String dayName = days[d.getDayOfWeek()]
+		ArrayList<Deficit> deficits = new ArrayList<Deficit>()
+		def rooms = Room.findAllByCapacityGreaterThan(0)
+		rooms.each {
+			// Agregar enrolled a extraordinarios!!! def extra = ExtraOrdinaryEvent.findAllByRoomAndDate(it.name, d)
+			def ord = OrdinaryEvent.findAllByRoomAndDay(it.name, d.getDayOfWeek())
+			ord.each { ev ->
+				if(ev.enrolled > it.capacity)
+				{
+					deficits.add(new Deficit([room: it.name, capacity: it.capacity,
+						enrolled: ev.enrolled, name: ev.courseCode + ' - ' + ev.courseName + ' (' + ev.commission + ')',
+						from: getTimeString(ev.from, false),
+						to: getTimeString(ev.to, false)
+						]))
+				}
+			}
+		}
+		[deficits: deficits, day: dayName, date: dtf.print(d)]
+	}
+	
+	def bookingRoom = {
+		DateTime d = getDate(params.date)
+		String dayName = days[d.getDayOfWeek()]
+		Integer capacity = Integer.parseInt(params.capacity)
+		LocalTime tf = new LocalTime(8, 0)
+		LocalTime tt = new LocalTime(10, 0)
+		if(d.dayOfYear == new DateTime().dayOfYear || params.timeFrom || params.timeTo) {
+			tf = getTime(params.timeFrom)
+			tt = getTime(params.timeTo)
+		}
+		int min = ((tf.getHourOfDay() - 8)*2) + ((tf.getMinuteOfHour() > 0) ? 1 : 0)
+		int max = ((tt.getHourOfDay() - 8)*2) + ((tt.getMinuteOfHour() > 0) ? 1 : 0)
+		ArrayList<TetrisItem> tetris = getTetris(d)
+		def items = tetris.findAll{t -> Integer.parseInt(t.roomCapacity) >= capacity}
+		def cant = []
+		items.eachWithIndex { t, i ->
+			if(Integer.parseInt(t.roomCapacity) >= capacity && verifyHour(t.events, min, max)) {
+				cant << i
+			}
+		}
+		[allows: cant, capacity:capacity, tetris: items, day: dayName, date: dtf.print(d), from: getTimeString(tf, true), to: getTimeString(tt, true), min: min, max: max]
+	}
+	
+	def confirmBookingRoom = {
+		[capacity: params.capacity, room: params.room, roomCapacity: params.roomCapacity, 
+			day: params.day, date: params.date, from: params.from, to: params.to]
+	}
+	
+	public boolean verifyHour(String[] events, int from, int to)
+	{
+		for(i in from..to-1)
+		{
+			if(!events[i].equals('')) return false
+		}
+		return true;
+	}
+	
 	public String getTimeString(LocalTime t, boolean zone) {
 		return (t.getHourOfDay() < (zone ? 10 : 7) ? "0" : "") + (t.getHourOfDay() + (zone ? 0 : 3)) + ":" +
 		(t.getMinuteOfHour() < 10 ? "0" : "") + t.getMinuteOfHour()
@@ -174,7 +304,6 @@ class ReportController {
 	{
 		DateTime date = new DateTime()
 		if(d) {
-			DateTimeFormatter dtf = DateTimeFormat.forPattern("dd/MM/yyyy");
 			date = dtf.parseDateTime(d);
 		}
 		return date;
@@ -182,7 +311,8 @@ class ReportController {
 	
 	public LocalTime getTime(def t)
 	{
-		LocalTime time = new LocalTime(8, 00)
+		DateTime d = new DateTime()
+		LocalTime time = new LocalTime(d.getHourOfDay(), d.getMinuteOfHour())
 		if(t) {
 			def ts = t.split(':')
 			time = new LocalTime(Integer.parseInt(ts[0]), Integer.parseInt(ts[1]))
@@ -192,7 +322,7 @@ class ReportController {
 	
 	public ArrayList<Set<Room>> getNotAvailableRooms(DateTime date) {
 		
-		List<Room> dbrooms = Room.findAll()
+		List<Room> dbrooms = Room.findAllByCapacityGreaterThan(0)
 		ArrayList<Set<Room>> rooms = new ArrayList<HashSet<Room>>(14);
 		for(i in 0..13) {
 			rooms[i] = new HashSet<Room>()
@@ -261,7 +391,7 @@ class ReportController {
 					if(!ti.events[i].equals('')) {
 						ti.events[i] += '/'
 					}
-					ti.events[i] += 'Extra'
+					ti.events[i] += e.courseName
 				}
 			}
 			List<OrdinaryEvent> ord = OrdinaryEvent.findAllByRoomAndDay(it.name, d.getDayOfWeek())

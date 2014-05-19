@@ -18,14 +18,14 @@
 var defaults = {
 
 	// display
-	defaultView: 'month',
+	defaultView: 'agendaWeek',
 	aspectRatio: 1.35,
 	header: {
-		left: 'title',
+		left: '',
 		center: '',
-		right: 'today prev,next'
+		right: ''
 	},
-	weekends: true,
+	weekends: false,
 	weekNumbers: false,
 	weekNumberCalculation: 'iso',
 	weekNumberTitle: 'W',
@@ -61,19 +61,19 @@ var defaults = {
 	// locale
 	isRTL: false,
 	firstDay: 0,
-	monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
-	monthNamesShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-	dayNames: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
-	dayNamesShort: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+	monthNames: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
+	monthNamesShort: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+	dayNames: ['Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'],
+	dayNamesShort: ['Dom','Lun','Mar','Mie','Jue','Vie','Sab'],
 	buttonText: {
 		prev: "<span class='fc-text-arrow'>&lsaquo;</span>",
 		next: "<span class='fc-text-arrow'>&rsaquo;</span>",
 		prevYear: "<span class='fc-text-arrow'>&laquo;</span>",
 		nextYear: "<span class='fc-text-arrow'>&raquo;</span>",
-		today: 'today',
-		month: 'month',
-		week: 'week',
-		day: 'day'
+		today: 'Hoy',
+		month: 'Mes',
+		week: 'Semana',
+		day: 'Dia'
 	},
 	
 	// jquery-ui theming
@@ -2752,20 +2752,18 @@ function AgendaDayView(element, calendar) {
 ;;
 
 setDefaults({
-	allDaySlot: true,
-	allDayText: 'all-day',
-	firstHour: 6,
+	firstHour: 8,
 	slotMinutes: 30,
 	defaultEventMinutes: 120,
-	axisFormat: 'h(:mm)tt',
+	axisFormat: 'H(:mm)',
 	timeFormat: {
-		agenda: 'h:mm{ - h:mm}'
+		agenda: 'H(:mm)'
 	},
 	dragOpacity: {
 		agenda: .5
 	},
-	minTime: 0,
-	maxTime: 24,
+	minTime: 8,
+	maxTime: 22,
 	slotEventOverlap: true
 });
 

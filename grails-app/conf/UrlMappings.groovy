@@ -1,6 +1,9 @@
 class UrlMappings {
 
 	static mappings = {
+		
+		"/callbackLogin/login" (view: "/login")
+		
 		"/$controller/$action?/$id?"{
 			constraints {
 				// apply constraints here

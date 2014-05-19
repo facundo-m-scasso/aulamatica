@@ -18,7 +18,7 @@ import groovy.json.JsonSlurper
 class CallbackLoginController {
 
 	def index() {
-		String login = 'ERROR'
+		String loginMsg = 'ERROR'
 		String uri = '/'
 		String url = "https://accounts.google.com/o/oauth2/token";
 		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
@@ -56,29 +56,41 @@ class CallbackLoginController {
 		while ((line = rd.readLine()) != null) {
 			result.append(line);
 		}
-		
+
 		def slurper = new JsonSlurper()
 		def auth = slurper.parseText(result.toString())
-		
+
 		InputStream is = new URL("https://www.googleapis.com/oauth2/v1/userinfo?access_token=" +  auth['access_token']).openStream();
 		try {
-		  BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-		  StringBuilder sb = new StringBuilder();
-		  int cp;
-		  while ((cp = reader.read()) != -1) {
-			sb.append((char) cp);
-		  }
-		  def responseLogin = slurper.parseText(sb.toString())
-		  if(responseLogin['email'].contains('itba.edu.ar')) {
-			  uri = '/index'
-		  }
-		  else
-		  {
-			  login = 'ERRORDOMAIN'
-		  }
+			BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+			StringBuilder sb = new StringBuilder();
+			int cp;
+			while ((cp = reader.read()) != -1) {
+				sb.append((char) cp);
+			}
+			def responseLogin = slurper.parseText(sb.toString())
+			if(responseLogin['email'].contains('itba.edu.ar')) {
+				uri = '/index'
+			}
+			else
+			{
+				loginMsg = 'ERRORDOMAIN'
+			}
 		} finally {
-		  is.close();
+			is.close();
 		}
-		redirect(uri:uri, params:[login: login])
+
+		if(uri.equals('/index'))
+		{
+			redirect(uri:uri)
+		}
+		else
+		{
+			redirect(action:'login', params:[login:loginMsg])
+		}
+	}
+
+	def login = {
+		[login: params.login]
 	}
 }

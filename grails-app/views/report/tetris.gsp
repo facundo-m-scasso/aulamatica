@@ -52,7 +52,7 @@ th {
         <g:each in="${tetris}" var="item">
 			<tr>
 				<th class="headcol">
-					${item.roomName} (${item.roomCapacity}) - ${item.day}
+					${item.roomName} (${item.roomCapacity}) - ${item.day.substring(0, 2).toUpperCase()}
 				</th>
 				<g:each in="${item.events}" var="ev">
 					<g:if test="${ev.equals('')}">

@@ -22,10 +22,10 @@
 </head>
 <body class="bg-black">
 	<div class="form-box" id="login-box">
-		<div class="header">Ingreso - Aulamatica</div>
-		<form action="../../index.html" method="post">
+		<div class="header">Ingreso - Aulamatica </div>
+		<form action="" method="post">
 			<div class="body bg-gray">
-				<g:if test="${login.equals('ERROR')}">
+				<g:if test="${params.login.equals('ERROR')}">
 					<div class="alert alert-danger alert-dismissable">
 						<i class="fa fa-ban"></i>
 						<button type="button" class="close" data-dismiss="alert"
@@ -33,7 +33,7 @@
 						<b>Cuidado!</b> Ha ocurrido un error en el login.
 					</div>
 				</g:if>
-				<g:elseif test="${login.equals('ERRORDOMAIN')}">
+				<g:elseif test="${params.login.equals('ERRORDOMAIN')}">
 				<div class="alert alert-danger alert-dismissable">
 						<i class="fa fa-ban"></i>
 						<button type="button" class="close" data-dismiss="alert"
@@ -62,8 +62,7 @@
 			</button>
 		</div>
 	</div>
-	<script
-		src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+	<script src="${resource(dir: 'js', file: 'jquery-2-0-2.min.js')}" type="text/javascript"></script>
 	<script src="${resource(dir: 'js', file: 'bootstrap.min.js')}"
 		type="text/javascript"></script>
 </body>
