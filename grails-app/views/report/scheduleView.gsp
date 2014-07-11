@@ -30,7 +30,7 @@
 		<g:each in="${tetris}" var="item">
 			<tr>
 				<th style="font-size: 11px; margin:0px; padding:0px; width:130px; text-align: center;">
-					${item.roomName} (${item.roomCapacity}) - ${item.day.substring(0, 2).toUpperCase()}
+					${item.roomName} (${item.roomCapacity}) 
 				</th>
 				<g:each in="${item.events}" var="ev" status="i">
 					<g:if test="${(d.dayOfYear != dateTime.dayOfYear || ((i/2)+8) >= d.getHourOfDay()) && i%2 == 0}">

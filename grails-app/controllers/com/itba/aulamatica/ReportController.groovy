@@ -5,8 +5,10 @@ import grails.validation.Validateable;
 import java.util.concurrent.TimeUnit;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
 import org.joda.time.DurationFieldType;
+import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -284,6 +286,24 @@ class ReportController {
 	def confirmBookingRoom = {
 		[capacity: params.capacity, room: params.room, roomCapacity: params.roomCapacity, 
 			day: params.day, date: params.date, from: params.from, to: params.to]
+	}
+	
+	def prebooking = {
+		LocalDate startDate = new LocalDate(2011, 11, 8);
+		LocalDate endDate = new LocalDate(2012, 5, 1);
+		
+		LocalDate thisMonday = startDate.withDayOfWeek(DateTimeConstants.MONDAY);
+		
+		if (startDate.isAfter(thisMonday)) {
+			startDate = thisMonday.plusWeeks(1); // start on next monday
+		} else {
+			startDate = thisMonday; // start on this monday
+		}
+		
+		while (startDate.isBefore(endDate)) {
+			System.out.println(startDate);
+			startDate = startDate.plusWeeks(1);
+		}
 	}
 	
 	public boolean verifyHour(String[] events, int from, int to)

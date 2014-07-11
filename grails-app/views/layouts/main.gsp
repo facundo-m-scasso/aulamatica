@@ -1,4 +1,5 @@
-<!doctype html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!--[if lt IE 7 ]> <html lang="en" class="no-js ie6"> <![endif]-->
 <!--[if IE 7 ]>    <html lang="en" class="no-js ie7"> <![endif]-->
 <!--[if IE 8 ]>    <html lang="en" class="no-js ie8"> <![endif]-->
@@ -306,14 +307,9 @@
 	<script
 		src="${resource(dir: 'js/plugins/bootstrap-wysihtml5', file: 'bootstrap3-wysihtml5.all.min.js')}"
 		type="text/javascript"></script>
-	<script
-		src="${resource(dir: 'js/plugins/iCheck', file: 'icheck.min.js')}"
-		type="text/javascript"></script>
 	<script src="${resource(dir: 'js/AdminLTE', file: 'app.js')}"
 		type="text/javascript"></script>
 	<script src="${resource(dir: 'js/AdminLTE', file: 'dashboard.js')}"
-		type="text/javascript"></script>
-	<script src="${resource(dir: 'js/AdminLTE', file: 'demo.js')}"
 		type="text/javascript"></script>
 </body>
 </html>
